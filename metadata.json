@@ -1,0 +1,6 @@
+{
+  "name": "Supermarket Digital Ledger",
+  "description": "A mobile-first digital ledger for a single supermarket with single-password access.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
