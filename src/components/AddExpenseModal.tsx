@@ -253,10 +253,10 @@ export function AddExpenseModal({ isOpen, onClose, onSuccess, initialExpense }: 
               >
                 <option value="">Select category...</option>
                 {Array.from(new Set([
-                  'Rent', 'Electricity', 'Water', 'Internet', 'Salary', 'Transport', 
+                  'Rent', 'Electricity', 'Water', 'Internet', 'Transport', 
                   'Packaging', 'Cleaning', 'Maintenance', 'Office Supplies', 
                   'Grocery Supplies', 'Miscellaneous',
-                  ...categories.map(c => c.name)
+                  ...categories.filter(c => c.name !== 'Salary').map(c => c.name)
                 ])).map((catName) => (
                   <option key={catName} value={catName}>{catName}</option>
                 ))}

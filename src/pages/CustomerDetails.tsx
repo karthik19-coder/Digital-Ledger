@@ -230,7 +230,11 @@ export default function CustomerDetails() {
       loadData();
     } catch (error: unknown) {
       console.error('Error recording payment:', error);
-      setPaymentError((error instanceof Error ? error.message : String(error)) || 'Failed to record payment.');
+      let errMsg = (error instanceof Error ? error.message : String(error)) || 'Failed to record payment.';
+      if (errMsg.includes('Payment exceeds outstanding customer credit')) {
+        errMsg = "Payment cannot exceed the customer's outstanding credit.";
+      }
+      setPaymentError(errMsg);
     } finally {
       setIsRecording(false);
     }
