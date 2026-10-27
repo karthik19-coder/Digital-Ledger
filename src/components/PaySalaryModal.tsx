@@ -101,7 +101,7 @@ export function PaySalaryModal({ isOpen, onClose, onSuccess, employee, pendingSa
         </div>
 
         {/* Content */}
-        <div className="p-4 overflow-y-auto flex-1">
+        <div className="p-4 overflow-y-auto flex-1 min-h-0">
           {error && (
             <div className={`mb-4 p-3 ${moduleTheme.salary.bgLight} text-red-700 rounded-lg flex items-start gap-2 text-sm border border-red-100`}>
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />

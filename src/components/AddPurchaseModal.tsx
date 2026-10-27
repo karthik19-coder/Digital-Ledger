@@ -202,7 +202,7 @@ export function AddPurchaseModal({ isOpen, onClose, onSuccess, initialPurchase }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 pb-[calc(80px+max(16px,env(safe-area-inset-bottom)))] sm:pb-4 animate-in fade-in">
-      <div className="bg-white w-[92%] sm:w-full max-w-[420px] sm:max-w-lg rounded-2xl shadow-xl overflow-hidden max-h-[90vh] sm:max-h-[80vh] flex flex-col animate-in zoom-in-95 duration-200">
+      <div className="bg-white w-[92%] sm:w-full max-w-[420px] sm:max-w-lg rounded-2xl shadow-xl overflow-hidden max-h-[90vh] sm:max-h-[min(88vh,640px)] flex flex-col animate-in zoom-in-95 duration-200">
 
         {/* Modal Header */}
         <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
@@ -221,7 +221,7 @@ export function AddPurchaseModal({ isOpen, onClose, onSuccess, initialPurchase }
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 min-h-0 flex-1">
           {error && (
             <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg flex items-start border border-red-100">
               <AlertCircle className="w-4 h-4 mr-2 mt-0.5 shrink-0" />

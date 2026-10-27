@@ -53,7 +53,7 @@ export function AppHeaderBanner({
         <Icon className="w-48 h-48 sm:w-64 sm:h-64 text-white" />
       </div>
 
-      <div className="relative z-10 w-full max-w-md mx-auto flex flex-col flex-1">
+      <div className="relative z-10 w-full max-w-md lg:max-w-6xl mx-auto flex flex-col flex-1">
         {/* Top Navigation Row */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">

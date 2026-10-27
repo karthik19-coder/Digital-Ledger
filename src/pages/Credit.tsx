@@ -250,84 +250,84 @@ export default function Credit() {
           </HeaderActionGroup>
         </AppHeaderBanner>
 
-        <div className="px-4 sm:px-6 mt-6 relative z-20">
+        <div className="px-4 sm:px-6 lg:px-8 mt-6 relative z-20 max-w-md lg:max-w-5xl mx-auto w-full space-y-6">
           <ModuleSearchBar 
             placeholder="Search customers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
 
-      <div className="px-4 sm:px-6 mt-6">
-        {customers.length === 0 ? (
-          <EmptyState 
-            icon={Users}
-            title="No Customers Yet"
-            subtitle="Add your first customer to start tracking credit and payments."
-            action={
-              <ModuleActionButton 
-                icon={Plus} 
-                label="Add Customer" 
-                onClick={(e) => { if (requirePermission(e)) openAddDialog(); }} 
-                variant="primary" 
-                className={!isOwner() ? 'opacity-50 cursor-not-allowed' : ''}
-              />
-            }
-          />
-        ) : filteredCustomers.length === 0 ? (
-          <EmptyState 
-            icon={SearchX}
-            title="No results found"
-            subtitle="No customers match your search query."
-          />
-        ) : (
-          <div className="space-y-3">
-            {filteredCustomers.map((customer) => (
-              <FinancialCard
-                key={customer.id}
-                title={customer.name}
-                subtitle={customer.phone ? `+91 ${customer.phone}` : 'No phone'}
-                amount={customer.total_credit}
-                amountColor={customer.total_credit > 0 ? "text-orange-600" : "text-slate-900"}
+          <div>
+            {customers.length === 0 ? (
+              <EmptyState 
                 icon={Users}
-                theme="customerCredit"
-                onClick={() => navigate(`/credit/customers/${customer.id}`)}
-                onEdit={(e) => {
-                  e.stopPropagation();
-                  setEditingCustomerId(customer.id);
-                  setNewCustomer({
-                    name: customer.name,
-                    phone: customer.phone || '',
-                    address: customer.address || '',
-                  });
-                  openAddDialog();
-                }}
-                onDelete={(e) => {
-                  e.stopPropagation();
-                  handleDeleteClick(customer);
-                }}
-                badge={
-                  customer.total_credit > 0 && dueSinceMap[customer.id] ? (
-                    <div className={`flex items-center gap-1 font-semibold text-[10px] sm:text-xs mt-1 ${dueSinceMap[customer.id]?.colorClass}`}>
-                      <Clock className="w-3 h-3" />
-                      <span>
-                        {dueSinceMap[customer.id]?.days === 0 
-                          ? 'Due Today' 
-                          : `Due Since ${dueSinceMap[customer.id]?.days} ${dueSinceMap[customer.id]?.days === 1 ? 'Day' : 'Days'}`}
-                      </span>
-                    </div>
-                  ) : undefined
+                title="No Customers Yet"
+                subtitle="Add your first customer to start tracking credit and payments."
+                action={
+                  <ModuleActionButton 
+                    icon={Plus} 
+                    label="Add Customer" 
+                    onClick={(e) => { if (requirePermission(e)) openAddDialog(); }} 
+                    variant="primary" 
+                    className={!isOwner() ? 'opacity-50 cursor-not-allowed' : ''}
+                  />
                 }
               />
-            ))}
+            ) : filteredCustomers.length === 0 ? (
+              <EmptyState 
+                icon={SearchX}
+                title="No results found"
+                subtitle="No customers match your search query."
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                {filteredCustomers.map((customer) => (
+                  <FinancialCard
+                    key={customer.id}
+                    title={customer.name}
+                    subtitle={customer.phone ? `+91 ${customer.phone}` : 'No phone'}
+                    amount={customer.total_credit}
+                    amountColor={customer.total_credit > 0 ? "text-orange-600" : "text-slate-900"}
+                    icon={Users}
+                    theme="customerCredit"
+                    onClick={() => navigate(`/credit/customers/${customer.id}`)}
+                    onEdit={(e) => {
+                      e.stopPropagation();
+                      setEditingCustomerId(customer.id);
+                      setNewCustomer({
+                        name: customer.name,
+                        phone: customer.phone || '',
+                        address: customer.address || '',
+                      });
+                      openAddDialog();
+                    }}
+                    onDelete={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(customer);
+                    }}
+                    badge={
+                      customer.total_credit > 0 && dueSinceMap[customer.id] ? (
+                        <div className={`flex items-center gap-1 font-semibold text-[10px] sm:text-xs mt-1 ${dueSinceMap[customer.id]?.colorClass}`}>
+                          <Clock className="w-3 h-3" />
+                          <span>
+                            {dueSinceMap[customer.id]?.days === 0 
+                              ? 'Due Today' 
+                              : `Due Since ${dueSinceMap[customer.id]?.days} ${dueSinceMap[customer.id]?.days === 1 ? 'Day' : 'Days'}`}
+                          </span>
+                        </div>
+                      ) : undefined
+                    }
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
 
       {/* Add Customer Modal */}
       {isAddDialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white w-[92%] sm:w-full max-w-[420px] sm:max-w-md rounded-2xl flex flex-col max-h-[90vh] sm:max-h-[80vh] shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white w-[92%] sm:w-full max-w-[420px] sm:max-w-md rounded-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
               <h2 className="text-xl font-bold text-slate-900">{editingCustomerId ? "Edit Customer" : "Add Customer"}</h2>
               <button 

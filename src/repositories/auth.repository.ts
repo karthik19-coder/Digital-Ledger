@@ -28,6 +28,28 @@ export const authRepository = {
     }
   },
 
+  signInWithGoogle: async (redirectTo: string): Promise<RepoResult<void>> => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account',
+          },
+        },
+      });
+      if (error) {
+        console.warn('Google sign-in initiation failed:', error.message);
+        return handleDbError(error);
+      }
+      return { success: true };
+    } catch (e) {
+      return handleDbError(e);
+    }
+  },
+
   signOut: async (): Promise<RepoResult<void>> => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -78,6 +100,15 @@ export const authRepository = {
         return handleDbError(error);
       }
       if (!data) {
+        // Attempt to ensure profile via secure RPC for newly signed-in OAuth users
+        const { data: rpcData, error: rpcError } = await supabase.rpc('ensure_user_profile');
+        if (!rpcError && rpcData) {
+          return { success: true, data: rpcData as Profile };
+        }
+        if (rpcError) {
+          // Log sanitized error message without printing tokens or sensitive payload
+          console.warn('Profile provisioning via RPC failed:', rpcError.message || rpcError);
+        }
         return { success: false, error: { code: 'AUTH_ERROR', message: 'Profile not found' } };
       }
 

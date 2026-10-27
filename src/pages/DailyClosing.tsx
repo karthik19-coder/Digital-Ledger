@@ -167,7 +167,7 @@ export default function DailyClosingPage() {
         </div>
       </AppHeaderBanner>
 
-      <main className="flex-1 p-4 sm:p-6 space-y-6 pb-24 safe-page-pb max-w-2xl mx-auto w-full mt-6">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 pb-24 safe-page-pb max-w-2xl lg:max-w-4xl mx-auto w-full mt-6">
         {existingClosing && (
           <div className={`bg-white rounded-xl shadow-sm p-4 border ${colors.neutral.border} text-sm ${colors.neutral.text} flex flex-col gap-1`}>
             <p><strong>Opened:</strong> {existingClosing.createdAt ? format(parseISO(existingClosing.createdAt), 'PPpp') : 'N/A'}</p>

@@ -205,7 +205,7 @@ export default function BusinessFundsHistory() {
         </div>
       )}
 
-      <div className="px-4 sm:px-6 mt-6 space-y-4">
+      <div className="px-4 sm:px-6 lg:px-8 mt-6 space-y-4 max-w-md lg:max-w-5xl mx-auto w-full">
         {/* Search */}
         <div className="mb-4">
           <ModuleSearchBar
