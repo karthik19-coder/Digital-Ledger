@@ -68,7 +68,7 @@ export const businessDayService = {
    * @param dateStr The date in 'yyyy-MM-dd' format.
    * @returns BusinessDaySummary for that date.
    */
-  async recalculateBusinessDay(dateStr: string, prefetchedData?: any): Promise<BusinessDaySummary> {
+  async recalculateBusinessDay(dateStr: string, prefetchedData?: any, persist: boolean = false): Promise<BusinessDaySummary> {
     // Fetch ALL data once (full tables needed for calculateBalances cumulative sums)
     const rawData = prefetchedData || await financialCalculationService.fetchAllData();
     
@@ -126,8 +126,10 @@ export const businessDayService = {
     // Cache the summary for the dashboard
     sessionStorage.setItem(`business_day_${dateStr}`, JSON.stringify(summary));
 
-    // Update Daily Closing to ensure it perfectly mirrors the state of the business day
-    await closingService.updateClosingFromBusinessDay(dateStr, summary);
+    // Only update Daily Closing if persistence is explicitly requested
+    if (persist) {
+      await closingService.updateClosingFromBusinessDay(dateStr, summary);
+    }
 
     return summary;
   },

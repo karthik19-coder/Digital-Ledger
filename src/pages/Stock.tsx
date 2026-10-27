@@ -139,8 +139,8 @@ export default function Stock() {
       </AppHeaderBanner>
 
       {/* Metric Breakdown Cards */}
-      <div className="px-4 sm:px-6 space-y-3 mt-6">
-        <div className="grid grid-cols-2 gap-3">
+      <div className="px-4 sm:px-6 lg:px-8 space-y-6 mt-6 max-w-md lg:max-w-5xl mx-auto w-full">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <SummaryCard
             title="Opening Stock"
             amount={data?.openingStock || 0}

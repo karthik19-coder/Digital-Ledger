@@ -230,7 +230,11 @@ export default function CustomerDetails() {
       loadData();
     } catch (error: unknown) {
       console.error('Error recording payment:', error);
-      setPaymentError((error instanceof Error ? error.message : String(error)) || 'Failed to record payment.');
+      let errMsg = (error instanceof Error ? error.message : String(error)) || 'Failed to record payment.';
+      if (errMsg.includes('Payment exceeds outstanding customer credit')) {
+        errMsg = "Payment cannot exceed the customer's outstanding credit.";
+      }
+      setPaymentError(errMsg);
     } finally {
       setIsRecording(false);
     }
@@ -369,7 +373,7 @@ export default function CustomerDetails() {
         </div>
       </AppHeaderBanner>
 
-      <div className="px-4 sm:px-6 space-y-6 mt-6 relative z-20">
+      <div className="px-4 sm:px-6 lg:px-8 space-y-6 mt-6 relative z-20 max-w-md lg:max-w-5xl mx-auto w-full">
         {/* Customer Information Card */}
         <Card className={`shadow-sm ${colors.neutral.border} overflow-hidden bg-white`}>
           <CardContent className="p-4 sm:p-5">

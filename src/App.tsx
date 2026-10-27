@@ -92,6 +92,11 @@ export default function App() {
                     <Route path="reports" element={<Reports />} />
                     <Route path="settings" element={<Settings />} />
                   </Route>
+                  <Route path="/initial-setup" element={
+                    <ProtectedRoute>
+                      <InitialSetup />
+                    </ProtectedRoute>
+                  } />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </RouteTransitionProvider>

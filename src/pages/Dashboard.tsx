@@ -239,22 +239,18 @@ export default function Dashboard() {
         Pull down to refresh
       </div>
 
-      <div className="p-4 sm:p-6 pb-28 max-w-[600px] mx-auto w-full flex flex-col gap-5">
+      <div className="p-4 sm:p-6 lg:p-8 pb-28 lg:pb-12 max-w-[600px] lg:max-w-7xl mx-auto w-full flex flex-col gap-5 lg:gap-6">
         
-        {/* Header & Date Section wrapped in dark top like reference if needed, but text says White background. We will use white cards to look clean. */}
         {/* Header */}
         <header className="bg-white rounded-[22px] p-5 sm:p-6 shadow-[0_8px_28px_rgba(15,23,42,0.06)] border border-[#EEF2F7] relative overflow-hidden">
-          {/* Subtle gradient/glow effects */}
-          
-          
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-2 lg:mb-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[16px] bg-blue-50 text-[#2563EB] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-[16px] bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0">
                   <Store className="w-5 h-5" />
                 </div>
-                <div>
-                  <h1 className="text-lg sm:text-xl font-bold text-[#0F172A] tracking-tight leading-tight">
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-xl font-bold text-[#0F172A] tracking-tight leading-tight truncate">
                     {data.shop_name}
                   </h1>
                   <p className="text-xs text-[#475569] font-medium tracking-wide">
@@ -262,34 +258,63 @@ export default function Dashboard() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button 
-                  onClick={() => setIsLogoutModalOpen(true)}
-                  title="Logout"
-                  className="w-10 h-10 rounded-full bg-white border border-[#EEF2F7] text-red-500 hover:text-red-600 hover:bg-red-50 active:bg-red-100 shadow-[0_4px_12px_rgba(15,23,42,0.05)] transition-all flex items-center justify-center shrink-0"
-                  aria-label="Logout"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-                <button 
-                  onClick={handleRefreshClick}
-                  disabled={!isToday(selectedDate)}
-                  className="w-10 h-10 rounded-full bg-white border border-[#EEF2F7] text-slate-400 hover:text-slate-600 hover:bg-slate-50 shadow-[0_4px_12px_rgba(15,23,42,0.05)] transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                  aria-label="Refresh dashboard"
-                >
-                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-blue-400' : ''}`} />
-                </button>
+
+              {/* Right controls: Date navigator and action buttons */}
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                <div className="bg-white border border-[#E5E7EB] rounded-full p-1.5 flex items-center justify-between shadow-[0_8px_20px_rgba(15,23,42,0.06)] min-w-[260px] sm:min-w-[280px]">
+                  <button 
+                    onClick={previousDay}
+                    aria-label="Previous day"
+                    className="w-9 h-9 rounded-full hover:bg-slate-50 flex items-center justify-center text-[#475569] hover:text-[#1E293B] transition-colors disabled:opacity-50"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4 text-[#475569]" />
+                    <span className="text-sm font-semibold text-[#1E293B] tracking-wide">
+                      {formatDateDisplay(selectedDate)}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={nextDay}
+                    disabled={isBusinessDateToday}
+                    aria-label="Next day"
+                    className="w-9 h-9 rounded-full hover:bg-slate-50 flex items-center justify-center text-[#475569] hover:text-[#1E293B] transition-colors disabled:opacity-50"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button 
+                    onClick={handleRefreshClick}
+                    disabled={!isToday(selectedDate)}
+                    className="w-10 h-10 rounded-full bg-white border border-[#EEF2F7] text-slate-400 hover:text-slate-600 hover:bg-slate-50 shadow-[0_4px_12px_rgba(15,23,42,0.05)] transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                    aria-label="Refresh dashboard"
+                    title="Refresh"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-blue-400' : ''}`} />
+                  </button>
+                  <button 
+                    onClick={() => setIsLogoutModalOpen(true)}
+                    title="Logout"
+                    className="w-10 h-10 rounded-full bg-white border border-[#EEF2F7] text-red-500 hover:text-red-600 hover:bg-red-50 active:bg-red-100 shadow-[0_4px_12px_rgba(15,23,42,0.05)] transition-all flex items-center justify-center shrink-0"
+                    aria-label="Logout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
             
-            {/* Pending Day Banner inside header */}
+            {/* Pending Day Banner */}
             {pendingDay && !showPendingOverlay && (
-              <div className="mb-4 bg-orange-500/10 backdrop-blur-md border border-orange-500/20 rounded-2xl p-3 sm:p-4 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="mt-4 bg-orange-500/10 backdrop-blur-md border border-orange-500/20 rounded-2xl p-3 sm:p-4 w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex gap-2.5 items-start sm:items-center">
                   <AlertTriangle className="w-5 h-5 text-orange-400 shrink-0 mt-0.5 sm:mt-0" />
                   <div>
-                    <h3 className="text-sm font-semibold text-orange-300">⚠ Business Day Pending</h3>
-                    <p className="text-xs text-orange-400/80 mt-0.5">
+                    <h3 className="text-sm font-semibold text-orange-600 dark:text-orange-300">⚠ Business Day Pending</h3>
+                    <p className="text-xs text-orange-600/90 dark:text-orange-400/80 mt-0.5">
                       <span className="font-medium">{format(new Date(pendingDay), 'dd MMM yyyy')}</span> is still open.
                     </p>
                   </div>
@@ -306,35 +331,13 @@ export default function Dashboard() {
                 </Button>
               </div>
             )}
-            
-            <div className="bg-white border border-[#E5E7EB] rounded-full p-1.5 flex items-center justify-between shadow-[0_8px_20px_rgba(15,23,42,0.06)]">
-              <button 
-                onClick={previousDay}
-                className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-[#475569] hover:text-[#1E293B] transition-colors disabled:opacity-50"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-2.5">
-                <CalendarIcon className="w-4 h-4 text-[#475569]" />
-                <span className="text-sm font-semibold text-[#1E293B] tracking-wide">
-                  {formatDateDisplay(selectedDate)}
-                </span>
-              </div>
-              <button 
-                onClick={nextDay}
-                disabled={isBusinessDateToday}
-                className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-[#475569] hover:text-[#1E293B] transition-colors disabled:opacity-50"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
           </div>
         </header>
 
         {/* Quick Actions Card */}
         <div className="bg-white rounded-[22px] p-3 min-[375px]:p-4 sm:p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] border border-[#EEF2F7]">
           <h3 className="text-[10px] sm:text-xs font-bold text-slate-800 mb-3 sm:mb-5 tracking-wider">QUICK ACTIONS</h3>
-          <div className="grid grid-cols-4 gap-1.5 min-[375px]:gap-2 sm:gap-4 gap-y-3 sm:gap-y-6">
+          <div className="grid grid-cols-4 lg:grid-cols-8 gap-1.5 min-[375px]:gap-2 sm:gap-4 gap-y-3 sm:gap-y-4">
             
             <button onClick={(e) => { if (requirePermission(e)) navigate('/stock', { state: { openAdd: true } }) }} className={cn("flex flex-col items-center gap-1.5 sm:gap-2.5 p-1 min-[375px]:p-2 bg-white border border-[#EEF2F7] shadow-[0_6px_18px_rgba(15,23,42,0.05)] rounded-[16px] group cursor-pointer transition-transform hover:-translate-y-1", !isOwner() && "opacity-50 cursor-not-allowed")}>
               <div className="w-10 h-10 min-[375px]:w-12 min-[375px]:h-12 sm:w-14 sm:h-14 rounded-full bg-[#EEF2FF] text-[#4F46E5] flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
@@ -395,42 +398,42 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Hero Card - Today's Sales */}
-        <Link to="/sales" className="block relative group transition-transform hover:scale-[1.01] duration-300">
-          <div className="bg-gradient-to-br from-[#2563EB] via-[#1D4ED8] to-[#1E40AF] rounded-[22px] overflow-hidden shadow-[0_18px_45px_rgba(37,99,235,0.28)] relative p-6 sm:p-8">
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 p-2 opacity-[0.07] pointer-events-none">
-              <IndianRupee className="w-48 h-48 rotate-[-10deg] opacity-[0.08] text-white" />
+        {/* Financial Overview Grid - Responsive Desktop Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {/* Hero Card - Today's Sales */}
+          <Link to="/sales" className="block relative group transition-transform hover:scale-[1.01] duration-300 md:col-span-2 lg:col-span-2">
+            <div className="bg-gradient-to-br from-[#2563EB] via-[#1D4ED8] to-[#1E40AF] rounded-[22px] overflow-hidden shadow-[0_18px_45px_rgba(37,99,235,0.28)] relative p-6 sm:p-8 h-full flex flex-col justify-between">
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 p-2 opacity-[0.07] pointer-events-none">
+                <IndianRupee className="w-48 h-48 rotate-[-10deg] opacity-[0.08] text-white" />
+              </div>
+              <div className="absolute bottom-0 left-0 w-full h-16 opacity-20 pointer-events-none">
+                 <svg viewBox="0 0 400 100" preserveAspectRatio="none" className="w-full h-full text-white fill-current">
+                   <path d="M0,100 C50,80 100,20 150,50 C200,80 250,10 300,40 C350,70 400,20 400,20 L400,100 L0,100 Z" opacity="0.3"></path>
+                   <path d="M0,100 C40,90 80,40 120,60 C160,80 200,30 250,50 C300,70 350,30 400,10 L400,100 L0,100 Z"></path>
+                 </svg>
+              </div>
+              
+              <div className="relative z-10">
+                <p className="text-[rgba(255,255,255,0.8)] text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Today's Sales
+                </p>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-2">{formatCurrency(summary.todays_sales)}</h2>
+              </div>
+              <div className="relative z-10 pt-4">
+                <div className="w-full h-px bg-white/25 mb-3"></div>
+                <p className="text-xs font-medium text-[rgba(255,255,255,0.8)] flex items-center gap-1">
+                  <span>View daily sales breakdown</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </p>
+              </div>
             </div>
-            {/* Decorative line chart SVG background */}
-            <div className="absolute bottom-0 left-0 w-full h-16 opacity-20 pointer-events-none">
-               <svg viewBox="0 0 400 100" preserveAspectRatio="none" className="w-full h-full text-white fill-current">
-                 <path d="M0,100 C50,80 100,20 150,50 C200,80 250,10 300,40 C350,70 400,20 400,20 L400,100 L0,100 Z" opacity="0.3"></path>
-                 <path d="M0,100 C40,90 80,40 120,60 C160,80 200,30 250,50 C300,70 350,30 400,10 L400,100 L0,100 Z"></path>
-               </svg>
-            </div>
-            
-            <div className="relative z-10">
-              <p className="text-[rgba(255,255,255,0.8)] text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                Today's Sales
-              </p>
-              <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white mb-2">{formatCurrency(summary.todays_sales)}</h2>
-              <div className="w-full h-px bg-white/25 my-3"></div>
-              <p className="text-xs font-medium text-[rgba(255,255,255,0.8)] flex items-center gap-1">
-                <span>View daily sales breakdown</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </p>
-            </div>
-          </div>
-        </Link>
+          </Link>
 
-        {/* Financial Cards Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          
           {/* Cash */}
           <div 
             onClick={() => setBalanceBreakdown('cash')}
-            className="bg-white rounded-[22px] p-4 sm:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] border border-[#EEF2F7] relative group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgb(0,0,0,0.06)]"
+            className="bg-white rounded-[22px] p-4 sm:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] border border-[#EEF2F7] relative group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgb(0,0,0,0.06)] flex flex-col justify-between"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -440,15 +443,17 @@ export default function Dashboard() {
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
-            <h3 className="text-[10px] font-bold text-[#475569] uppercase tracking-widest mb-1">Cash</h3>
-            <p className="text-lg sm:text-xl font-extrabold text-[#0F172A]">{formatCurrency(summary.cash_balance)}</p>
-            <p className="text-[11px] text-[#94A3B8] font-medium mt-1">Collection</p>
+            <div>
+              <h3 className="text-[10px] font-bold text-[#475569] uppercase tracking-widest mb-1">Cash</h3>
+              <p className="text-lg sm:text-xl font-extrabold text-[#0F172A]">{formatCurrency(summary.cash_balance)}</p>
+              <p className="text-[11px] text-[#94A3B8] font-medium mt-1">Collection</p>
+            </div>
           </div>
 
           {/* UPI */}
           <div 
             onClick={() => setBalanceBreakdown('upi')}
-            className="bg-white rounded-[22px] p-4 sm:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] border border-[#EEF2F7] relative group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgb(0,0,0,0.06)]"
+            className="bg-white rounded-[22px] p-4 sm:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] border border-[#EEF2F7] relative group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgb(0,0,0,0.06)] flex flex-col justify-between"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -458,15 +463,17 @@ export default function Dashboard() {
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
-            <h3 className="text-[10px] font-bold text-[#475569] uppercase tracking-widest mb-1">UPI</h3>
-            <p className="text-lg sm:text-xl font-extrabold text-[#0F172A]">{formatCurrency(summary.upi_balance)}</p>
-            <p className="text-[11px] text-[#94A3B8] font-medium mt-1">Collection</p>
+            <div>
+              <h3 className="text-[10px] font-bold text-[#475569] uppercase tracking-widest mb-1">UPI</h3>
+              <p className="text-lg sm:text-xl font-extrabold text-[#0F172A]">{formatCurrency(summary.upi_balance)}</p>
+              <p className="text-[11px] text-[#94A3B8] font-medium mt-1">Collection</p>
+            </div>
           </div>
 
           {/* Customer Credit */}
           <div 
             onClick={openCustomerDueBreakdown}
-            className="bg-white rounded-[22px] p-4 sm:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] border border-[#EEF2F7] relative group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgb(0,0,0,0.06)] col-span-1"
+            className="bg-white rounded-[22px] p-4 sm:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] border border-[#EEF2F7] relative group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgb(0,0,0,0.06)] flex flex-col justify-between"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center">
@@ -475,19 +482,22 @@ export default function Dashboard() {
               <button 
                 onClick={(e) => { e.stopPropagation(); if(requirePermission(e)) openCreditActionModal(); }}
                 className={cn("w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center hover:bg-orange-200 transition-colors shadow-sm", !isOwner() && "opacity-50 cursor-not-allowed")}
+                title="Customer Credit"
               >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-            <h3 className="text-[10px] font-bold text-[#475569] uppercase tracking-widest mb-1 leading-tight">Customer Credit</h3>
-            <p className="text-lg sm:text-xl font-extrabold text-[#0F172A]">{formatCurrency(summary.customer_credit_outstanding)}</p>
-            <p className="text-[11px] text-[#94A3B8] font-medium mt-1">To Receive</p>
+            <div>
+              <h3 className="text-[10px] font-bold text-[#475569] uppercase tracking-widest mb-1 leading-tight">Customer Credit</h3>
+              <p className="text-lg sm:text-xl font-extrabold text-[#0F172A]">{formatCurrency(summary.customer_credit_outstanding)}</p>
+              <p className="text-[11px] text-[#94A3B8] font-medium mt-1">To Receive</p>
+            </div>
           </div>
 
           {/* Vendor Credit */}
           <div 
             onClick={openVendorDueBreakdown}
-            className="bg-white rounded-[22px] p-4 sm:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] border border-[#EEF2F7] relative group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgb(0,0,0,0.06)] col-span-1"
+            className="bg-white rounded-[22px] p-4 sm:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] border border-[#EEF2F7] relative group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgb(0,0,0,0.06)] flex flex-col justify-between"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
@@ -499,19 +509,22 @@ export default function Dashboard() {
                   if (requirePermission(e)) navigate('/stock', { state: { openAdd: true } });
                 }}
                 className={cn("w-7 h-7 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center hover:bg-purple-200 transition-colors shadow-sm", !isOwner() && "opacity-50 cursor-not-allowed")}
+                title="Vendor Credit"
               >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-            <h3 className="text-[10px] font-bold text-[#475569] uppercase tracking-widest mb-1 leading-tight">Vendor Credit</h3>
-            <p className="text-lg sm:text-xl font-extrabold text-[#0F172A]">{formatCurrency(data?.summary?.vendor_credit_outstanding || 0)}</p>
-            <p className="text-[11px] text-[#94A3B8] font-medium mt-1">To Pay</p>
+            <div>
+              <h3 className="text-[10px] font-bold text-[#475569] uppercase tracking-widest mb-1 leading-tight">Vendor Credit</h3>
+              <p className="text-lg sm:text-xl font-extrabold text-[#0F172A]">{formatCurrency(data?.summary?.vendor_credit_outstanding || 0)}</p>
+              <p className="text-[11px] text-[#94A3B8] font-medium mt-1">To Pay</p>
+            </div>
           </div>
 
-          {/* Estimated Stock Value - Full Width */}
+          {/* Estimated Stock Value - Spans 2 cols on desktop */}
           <div 
             onClick={openStockValueBreakdown}
-            className="col-span-2 bg-white rounded-[22px] p-4 sm:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] border border-[#EEF2F7] relative group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgb(0,0,0,0.05)] flex items-center justify-between"
+            className="col-span-1 md:col-span-2 lg:col-span-2 bg-white rounded-[22px] p-4 sm:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.05)] border border-[#EEF2F7] relative group cursor-pointer transition-all hover:-translate-y-1 hover:shadow-[0_8px_20px_rgb(0,0,0,0.05)] flex items-center justify-between"
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -526,70 +539,69 @@ export default function Dashboard() {
               <ChevronRight className="w-4.5 h-4.5" />
             </div>
           </div>
-          
-        </div>
 
-        {/* Daily Closing - Preserved Functionality */}
-        <div className="mt-2 group">
-          <div className="bg-slate-900 rounded-[24px] overflow-hidden shadow-lg shadow-slate-900/10 border-0 relative p-5 sm:p-6 transition-transform hover:-translate-y-1 duration-300">
-            <div className="absolute right-0 bottom-0 p-4 opacity-10 pointer-events-none">
-              <Moon className="w-24 h-24 text-white" />
-            </div>
-            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center">
-                    <Moon className="w-4 h-4 text-white" />
+          {/* Daily Closing - Full width across 4 cols on desktop */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-4 group">
+            <div className="bg-slate-900 rounded-[24px] overflow-hidden shadow-lg shadow-slate-900/10 border-0 relative p-5 sm:p-6 transition-transform hover:-translate-y-1 duration-300">
+              <div className="absolute right-0 bottom-0 p-4 opacity-10 pointer-events-none">
+                <Moon className="w-24 h-24 text-white" />
+              </div>
+              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-white/25 flex items-center justify-center">
+                      <Moon className="w-4 h-4 text-white" />
+                    </div>
+                    <h3 className="text-xs font-bold text-white uppercase tracking-widest">Daily Closing</h3>
                   </div>
-                  <h3 className="text-xs font-bold text-white uppercase tracking-widest">Daily Closing</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-slate-300 text-sm bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+                    <div className="flex justify-between sm:block">
+                      <span className="text-[10px] uppercase text-slate-400 font-bold mb-1 sm:block">Status</span>
+                      <span className="flex items-center gap-1.5 font-semibold text-white text-right sm:text-left">
+                        {closingStatus === 'Open' && <><span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> Open</>}
+                        {closingStatus === 'Unlocked' && <><Unlock className="w-3.5 h-3.5 text-orange-400" /> <span className="text-orange-400">Unlocked</span></>}
+                        {closingStatus === 'Closed' && <><Lock className="w-3.5 h-3.5 text-blue-400" /> Closed</>}
+                      </span>
+                    </div>
+                    <div className="hidden sm:block h-8 w-px bg-white/20"></div>
+                    <div className="flex justify-between sm:block border-t border-white/10 pt-2 sm:border-0 sm:pt-0">
+                      <span className="text-[10px] uppercase text-slate-400 font-bold mb-1 sm:block">Business Date</span>
+                      <span className="font-semibold text-white text-right sm:text-left">{formatDateDisplay(selectedDate)}</span>
+                    </div>
+                    {closingStatus === 'Closed' && closedAt && (
+                      <>
+                        <div className="hidden sm:block h-8 w-px bg-white/20"></div>
+                        <div className="flex justify-between sm:block border-t border-white/10 pt-2 sm:border-0 sm:pt-0">
+                          <span className="text-[10px] uppercase text-slate-400 font-bold mb-1 sm:block">Closed At</span>
+                          <span className="font-semibold text-white text-right sm:text-left">{format(new Date(closedAt), 'hh:mm a')}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-slate-300 text-sm bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/10">
-                  <div className="flex justify-between sm:block">
-                    <span className="text-[10px] uppercase text-slate-400 font-bold mb-1 sm:block">Status</span>
-                    <span className="flex items-center gap-1.5 font-semibold text-white text-right sm:text-left">
-                      {closingStatus === 'Open' && <><span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> Open</>}
-                      {closingStatus === 'Unlocked' && <><Unlock className="w-3.5 h-3.5 text-orange-400" /> <span className="text-orange-400">Unlocked</span></>}
-                      {closingStatus === 'Closed' && <><Lock className="w-3.5 h-3.5 text-blue-400" /> Closed</>}
-                    </span>
-                  </div>
-                  <div className="hidden sm:block h-8 w-px bg-white/20"></div>
-                  <div className="flex justify-between sm:block border-t border-white/10 pt-2 sm:border-0 sm:pt-0">
-                    <span className="text-[10px] uppercase text-slate-400 font-bold mb-1 sm:block">Business Date</span>
-                    <span className="font-semibold text-white text-right sm:text-left">{formatDateDisplay(selectedDate)}</span>
-                  </div>
-                  {closingStatus === 'Closed' && closedAt && (
-                    <>
-                      <div className="hidden sm:block h-8 w-px bg-white/20"></div>
-                      <div className="flex justify-between sm:block border-t border-white/10 pt-2 sm:border-0 sm:pt-0">
-                        <span className="text-[10px] uppercase text-slate-400 font-bold mb-1 sm:block">Closed At</span>
-                        <span className="font-semibold text-white text-right sm:text-left">{format(new Date(closedAt), 'hh:mm a')}</span>
-                      </div>
-                    </>
+                <div className="shrink-0 z-20 w-full sm:w-auto">
+                  {closingStatus === 'Closed' ? (
+                    <Button 
+                      onClick={(e) => {
+                        if (!requirePermission(e)) return;
+                        setShowUnlockConfirm(true);
+                      }}
+                      className={cn("w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 rounded-xl font-semibold h-11 shadow-sm transition-colors", !isOwner() && "opacity-50 cursor-not-allowed")}
+                    >
+                      Unlock Day
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={(e) => {
+                        if (!requirePermission(e)) return;
+                        navigate('/daily-closing?date=' + format(selectedDate, 'yyyy-MM-dd'));
+                      }}
+                      className={cn("w-full sm:w-auto bg-white text-[#0F172A] hover:bg-slate-100 shadow-md font-bold rounded-xl h-11 transition-all hover:scale-105", !isOwner() && "opacity-50 cursor-not-allowed")}
+                    >
+                      {closingStatus === 'Unlocked' ? 'Close Day Again' : "Close Today's Business"}
+                    </Button>
                   )}
                 </div>
-              </div>
-              <div className="shrink-0 z-20 w-full sm:w-auto">
-                {closingStatus === 'Closed' ? (
-                  <Button 
-                    onClick={(e) => {
-                      if (!requirePermission(e)) return;
-                      setShowUnlockConfirm(true);
-                    }}
-                    className={cn("w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 rounded-xl font-semibold h-11 shadow-sm transition-colors", !isOwner() && "opacity-50 cursor-not-allowed")}
-                  >
-                    Unlock Day
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={(e) => {
-                      if (!requirePermission(e)) return;
-                      navigate('/daily-closing?date=' + format(selectedDate, 'yyyy-MM-dd'));
-                    }}
-                    className={cn("w-full sm:w-auto bg-white text-[#0F172A] hover:bg-slate-100 shadow-md font-bold rounded-xl h-11 transition-all hover:scale-105", !isOwner() && "opacity-50 cursor-not-allowed")}
-                  >
-                    {closingStatus === 'Unlocked' ? 'Close Day Again' : "Close Today's Business"}
-                  </Button>
-                )}
               </div>
             </div>
           </div>
@@ -620,8 +632,7 @@ export default function Dashboard() {
               <button
                 className="w-full text-left p-4 rounded-[20px] border border-slate-200 hover:border-orange-300 hover:bg-orange-50/50 transition-all flex items-start gap-4 group"
                 onClick={() => {
-                  closeCreditActionModal();
-                  navigate('/credit/customers');
+                  navigate('/credit/customers', { replace: true });
                 }}
               >
                 <div className="w-12 h-12 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center shrink-0 group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors shadow-sm">
@@ -636,8 +647,7 @@ export default function Dashboard() {
               <button
                 className="w-full text-left p-4 rounded-[20px] border border-slate-200 hover:border-orange-300 hover:bg-orange-50/50 transition-all flex items-start gap-4 group"
                 onClick={() => {
-                  closeCreditActionModal();
-                  navigate('/credit', { state: { openAdd: true, autoOpenCredit: true } });
+                  navigate('/credit', { state: { openAdd: true, autoOpenCredit: true }, replace: true });
                 }}
               >
                 <div className="w-12 h-12 rounded-full bg-slate-50 text-slate-600 flex items-center justify-center shrink-0 group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors shadow-sm">

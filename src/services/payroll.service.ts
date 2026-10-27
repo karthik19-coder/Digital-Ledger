@@ -124,24 +124,10 @@ class PayrollService {
     const employee = await employeeService.getEmployee(data.employee_id);
     if (!employee) throw new Error('Employee not found');
 
-    const now = new Date().toISOString();
-    
-    // Create expense
-    const expense = await expenseService.addExpense({
-      category: 'Salary', // Must match the fixed category in expenseService
-      expense_type: 'business',
-      amount: data.amount,
-      payment_method: data.payment_method,
-      expense_date: data.payment_date || now.split('T')[0],
-      reference_number: data.reference_number,
-      notes: `${data.payment_type} for ${employee.name}${data.notes ? ' - ' + data.notes : ''}`
-    });
-
     const res = await salaryRepository.createSalaryPayment(data);
     if (!res.success || !res.data) throw new Error(res.error?.message || 'Failed to create salary payment');
     
     const payment = res.data;
-    // We can't attach expense_id directly to salary_payments in DB schema, but we fulfill the contract
     
     this.dispatchRefresh();
     return payment;

@@ -4,6 +4,7 @@ export const transactionService = {
   // A simple mechanism to batch recalculations if multiple transactions occur rapidly
   _recalcTimeout: null as any,
   _pendingRecalcs: new Set<string>(),
+  _isExecuting: false,
 
   /**
    * Universal wrapper for all financial transactions in the application.
@@ -20,20 +21,30 @@ export const transactionService = {
     saveCallback: () => Promise<T>,
     refreshEvents: string[] = []
   ): Promise<T> {
-    let result: T;
-    
-    // 1. Save the transaction via the domain service
-    try {
-      result = await saveCallback();
-    } catch (error) {
-      console.error('Transaction Save Error:', error);
-      throw error;
+    if (this._isExecuting) {
+      throw new Error('Transaction already in progress. Please wait.');
     }
+    
+    this._isExecuting = true;
+    
+    try {
+      let result: T;
+      
+      // 1. Save the transaction via the domain service
+      try {
+        result = await saveCallback();
+      } catch (error) {
+        console.error('Transaction Save Error:', error);
+        throw error;
+      }
 
-    // 2. Queue the business day for recalculation
-    this._queueRecalculation(transactionDate, refreshEvents);
+      // 2. Queue the business day for recalculation
+      this._queueRecalculation(transactionDate, refreshEvents);
 
-    return result;
+      return result;
+    } finally {
+      this._isExecuting = false;
+    }
   },
 
   _queueRecalculation(dateStr: string, refreshEvents: string[]) {

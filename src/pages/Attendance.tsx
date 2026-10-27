@@ -185,7 +185,7 @@ export default function Attendance() {
         </div>
       </AppHeaderBanner>
 
-      <div className="px-4 sm:px-6 mt-6">
+      <div className="px-4 sm:px-6 lg:px-8 mt-6 max-w-md lg:max-w-5xl mx-auto w-full space-y-4">
         {attendanceRows.length === 0 ? (
           <EmptyState 
             icon={User}
@@ -193,7 +193,8 @@ export default function Attendance() {
             subtitle="Please add employees to mark attendance."
           />
         ) : (
-          attendanceRows.map(row => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {attendanceRows.map(row => (
             <FinancialCard
               key={row.id}
               title={row.name}
@@ -257,7 +258,8 @@ export default function Attendance() {
                 </button>
               </div>
             </FinancialCard>
-          ))
+          ))}
+          </div>
         )}
       </div>
     </div>

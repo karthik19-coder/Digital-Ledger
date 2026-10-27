@@ -10,6 +10,7 @@ interface AuthContextType {
   role: 'owner' | 'viewer' | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -133,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     role: profile?.role || null,
     loading,
     signIn: authService.signIn,
+    signInWithGoogle: authService.signInWithGoogle,
     signOut: async () => {
       await authService.signOut();
       setSession(null);

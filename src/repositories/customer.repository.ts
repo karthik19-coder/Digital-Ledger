@@ -248,14 +248,22 @@ export const customerRepository = {
         notes: notes && notes.trim() !== '' ? notes : null
       };
 
-      const { data, error } = await supabase
-        .from('customer_transactions')
-        .insert([dbPayload])
-        .select()
-        .single();
-        
-      if (error) return handleDbError(error);
-      return { success: true, data: mapTransactionToUI(data as DBCustomerTransaction) };
+      if (type === 'payment') {
+        const { data, error } = await supabase
+          .rpc('record_customer_payment', { payload: dbPayload });
+          
+        if (error) return handleDbError(error);
+        return { success: true, data: mapTransactionToUI(data as DBCustomerTransaction) };
+      } else {
+        const { data, error } = await supabase
+          .from('customer_transactions')
+          .insert([dbPayload])
+          .select()
+          .single();
+          
+        if (error) return handleDbError(error);
+        return { success: true, data: mapTransactionToUI(data as DBCustomerTransaction) };
+      }
     } catch (e) {
       return handleDbError(e);
     }

@@ -36,6 +36,12 @@ export const closingService = {
     let closing = await closingService.getClosingForDate(dateStr);
     const now = new Date().toISOString();
 
+    if (closing?.status === 'Closed') {
+      // Historical closed daily closings are audited immutable snapshots.
+      // Do not overwrite closed records.
+      return;
+    }
+
     if (!closing) {
       closing = {
         date: dateStr,
@@ -65,12 +71,12 @@ export const closingService = {
         customerCollections: { cash: summary.customers.cashCollections, total: summary.customers.collections },
         vendorPayments: { cash: summary.vendors.cashPayments, total: summary.vendors.payments },
         businessFunds: { total: summary.businessFunds?.total || 0 },
-        estimatedStockValue: closing.status === 'Closed' ? (closing.estimatedStockValue || summary.stock.estimatedStockValue) : summary.stock.estimatedStockValue,
+        estimatedStockValue: summary.stock.estimatedStockValue,
         customerDue: summary.customers.outstanding,
         vendorDue: summary.vendors.outstanding,
-        expectedCash: closing.status === 'Closed' ? closing.expectedCash : summary.balances.expectedCash,
-        // recalculate difference only if not closed
-        difference: closing.status === 'Closed' ? closing.difference : (closing.actualCash - summary.balances.expectedCash),
+        expectedCash: summary.balances.expectedCash,
+        // recalculate difference since day is not closed
+        difference: closing.actualCash - summary.balances.expectedCash,
         lastUpdatedAt: now
       };
     }
@@ -144,8 +150,7 @@ export const closingService = {
       : sorted;
 
     for (const c of affected) {
-      // businessDayService.recalculateBusinessDay automatically calls closingService.updateClosingFromBusinessDay
-      // which safely updates the snapshot without modifying the 'Closed' status.
+      // Invalidate session cache and recompute in-memory state without modifying persisted daily closings
       await businessDayService.recalculateBusinessDay(c.date);
     }
 

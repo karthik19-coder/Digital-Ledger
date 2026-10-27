@@ -300,7 +300,7 @@ export default function StockVendors() {
         </HeaderActionGroup>
       </AppHeaderBanner>
 
-      <div className="px-4 sm:px-6 mt-6">
+      <div className="px-4 sm:px-6 lg:px-8 mt-6 max-w-md lg:max-w-5xl mx-auto w-full">
       {/* ── Summary Cards ── */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         <SummaryCard title="Total Vendors" amount={summaryStats.totalVendors} icon={Users} isCurrency={false} />
@@ -340,7 +340,7 @@ export default function StockVendors() {
         />
       ) : (
         /* ── Vendor Card List ── */
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {filteredVendors.map((vendor) => (
               <FinancialCard
                 key={vendor.id}

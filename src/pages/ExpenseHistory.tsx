@@ -281,7 +281,7 @@ export default function ExpenseHistory() {
         </HeaderActionGroup>
       </AppHeaderBanner>
 
-      <div className="px-4 sm:px-6 space-y-6 mt-6 relative z-20">
+      <div className="px-4 sm:px-6 lg:px-8 space-y-6 mt-6 relative z-20 max-w-md lg:max-w-5xl mx-auto w-full">
         {/* Search Bar */}
         <ModuleSearchBar 
           placeholder="Search by category, notes, payment method or ref number..."
@@ -341,7 +341,7 @@ export default function ExpenseHistory() {
         />
       ) : (
         /* ─── Expense Cards ──────────────────────────────────────────────── */
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           {filteredExpenses.map((expense) => {
             const isBusiness = expense.expense_type === 'business';
 

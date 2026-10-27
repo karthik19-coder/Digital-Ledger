@@ -26,6 +26,22 @@ export const authService = {
     }
   },
 
+  signInWithGoogle: async () => {
+    // Current origin (e.g. http://localhost:3000 or production domain)
+    const redirectTo = `${window.location.origin}/`;
+    const res = await authRepository.signInWithGoogle(redirectTo);
+    if (!res.success) {
+      const msg = res.error?.message?.toLowerCase() || '';
+      if (msg.includes('provider is not enabled') || msg.includes('unsupported provider')) {
+        throw new Error('Google sign-in is not enabled in this Supabase project. Please configure Google provider in Supabase Auth settings.');
+      }
+      if (msg.includes('network') || msg.includes('fetch')) {
+        throw new Error('Network error. Unable to reach authentication server.');
+      }
+      throw new Error(res.error?.message || 'Failed to initiate Google sign in. Please try again.');
+    }
+  },
+
   signOut: async () => {
     const res = await authRepository.signOut();
     if (!res.success) throw new Error(res.error?.message || 'Failed to sign out');

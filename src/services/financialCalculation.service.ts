@@ -6,6 +6,7 @@ import { vendorRepository } from '../repositories/vendor.repository';
 import { expenseRepository } from '../repositories/expense.repository';
 import { businessFundsRepository } from '../repositories/businessFunds.repository';
 import { salaryRepository } from '../repositories/salary.repository';
+import { closingRepository } from '../repositories/closing.repository';
 
 export interface FinancialBalances {
   cashBalance: number;
@@ -52,7 +53,7 @@ export const financialCalculationService = {
    * When dateStr is omitted, repositories fetch ALL rows (for cumulative calculations).
    */
   async fetchAllData(dateStr?: string) {
-    const [settings, salesRes, custTxRes, expRes, vendTxRes, payrollRes, fundsRes] = await Promise.all([
+    const [settings, salesRes, custTxRes, expRes, vendTxRes, payrollRes, fundsRes, closingRes] = await Promise.all([
       settingsService.getSettings(),
       salesRepository.getSales(dateStr),
       customerRepository.getAllCustomerTransactions(dateStr),
@@ -60,6 +61,7 @@ export const financialCalculationService = {
       vendorRepository.getAllVendorTransactions(dateStr),
       salaryRepository.getSalaryPayments(dateStr),
       businessFundsRepository.getBusinessFunds(dateStr),
+      closingRepository.getDailyClosings(),
     ]);
 
     return {
@@ -70,6 +72,7 @@ export const financialCalculationService = {
       vendorTx: (vendTxRes.success && vendTxRes.data) ? vendTxRes.data : [],
       salaryPayments: (payrollRes.success && payrollRes.data) ? payrollRes.data : [],
       businessFunds: (fundsRes.success && fundsRes.data) ? fundsRes.data : [],
+      closings: (closingRes.success && closingRes.data) ? closingRes.data : [],
     };
   },
 
@@ -81,10 +84,27 @@ export const financialCalculationService = {
   // prefetchedData receives highly dynamic caching payloads.
   // Enforcing strict types here breaks `useQueryCache` generic constraints.
   async calculateBalances(targetDateStr?: string, prefetchedData?: any): Promise<FinancialBalances> {
-    // Use pre-fetched data if available, otherwise fetch ALL rows (no date filter)
     const rawData = prefetchedData || await financialCalculationService.fetchAllData();
     const settings = rawData.settings;
     const startDate = settings.business_start_date || '1970-01-01';
+
+    // -----------------------------------------------------
+    // CASH ANCHOR LOGIC
+    // -----------------------------------------------------
+    // Find the most recent Closed daily closing strictly BEFORE the targetDateStr
+    const sortedClosings = (rawData.closings || []).sort((a: any, b: any) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+    const prevClosing = sortedClosings.find((c: any) => 
+      c.status === 'Closed' && (!targetDateStr || c.date < targetDateStr)
+    );
+
+    const cashAnchorDate = prevClosing ? prevClosing.date : '1970-01-01';
+    const cashAnchorValue = prevClosing ? (prevClosing.actualCash || 0) : (settings.opening_cash || 0);
+
+    let recentCashIn = 0;
+    let recentCashOut = 0;
+    // -----------------------------------------------------
 
     let cashSales = 0;
     let upiSales = 0;
@@ -117,6 +137,13 @@ export const financialCalculationService = {
       return true;
     };
 
+    // Helper to determine if a transaction should be included in the anchored cash balance
+    const isRecentCash = (date: string) => {
+      if (date <= cashAnchorDate) return false;
+      if (targetDateStr && date > targetDateStr) return false;
+      return true;
+    };
+
     // 1. Sales
     for (const sale of rawData.sales) {
       const d = sale.sale_date;
@@ -124,6 +151,10 @@ export const financialCalculationService = {
         cashSales += (sale.cash_sales || 0);
         upiSales += (sale.upi_sales || 0);
         creditSales += (sale.credit_sales || 0);
+        
+        if (isRecentCash(d)) {
+          recentCashIn += (sale.cash_sales || 0);
+        }
       }
     }
 
@@ -134,7 +165,10 @@ export const financialCalculationService = {
         if (tx.type === 'credit') {
           creditSales += (tx.amount || 0); // Some credit sales are in transactions
         } else if (tx.type === 'payment') {
-          if (tx.payment_method === 'Cash') customerCollectionsCash += (tx.amount || 0);
+          if (tx.payment_method === 'Cash') {
+            customerCollectionsCash += (tx.amount || 0);
+            if (isRecentCash(d)) recentCashIn += (tx.amount || 0);
+          }
           if (tx.payment_method === 'UPI') customerCollectionsUpi += (tx.amount || 0);
         }
       }
@@ -142,10 +176,16 @@ export const financialCalculationService = {
     totalSales = cashSales + upiSales + creditSales;
 
     // 3. Expenses
+    // NOTE: Skip category='Salary' — payrollService writes both an expense row AND a salary_payments row
+    // for every payment. salary_payments are counted separately in Loop 5; including Salary expenses
+    // would double-count every salary outflow.
     for (const exp of rawData.expenses) {
       const d = exp.expense_date;
-      if (isIncluded(d)) {
-        if (exp.payment_method === 'Cash') businessExpensesCash += (exp.amount || 0);
+      if (isIncluded(d) && exp.category !== 'Salary') {
+        if (exp.payment_method === 'Cash') {
+          businessExpensesCash += (exp.amount || 0);
+          if (isRecentCash(d)) recentCashOut += (exp.amount || 0);
+        }
         if (exp.payment_method === 'UPI') businessExpensesUpi += (exp.amount || 0);
       }
     }
@@ -157,7 +197,10 @@ export const financialCalculationService = {
         if (tx.type === 'purchase') {
           inventoryPurchases += (tx.amount || 0);
         } else if (tx.type === 'payment') {
-          if (tx.payment_method === 'Cash') vendorPaymentsCash += (tx.amount || 0);
+          if (tx.payment_method === 'Cash') {
+            vendorPaymentsCash += (tx.amount || 0);
+            if (isRecentCash(d)) recentCashOut += (tx.amount || 0);
+          }
           if (tx.payment_method === 'UPI') vendorPaymentsUpi += (tx.amount || 0);
         }
       }
@@ -165,8 +208,12 @@ export const financialCalculationService = {
 
     // 5. Payroll
     for (const p of rawData.salaryPayments) {
-      if (isIncluded(p.payment_date)) {
-        if (p.payment_method === 'Cash') salaryPaymentsCash += (p.amount || 0);
+      const d = p.payment_date;
+      if (isIncluded(d)) {
+        if (p.payment_method === 'Cash') {
+          salaryPaymentsCash += (p.amount || 0);
+          if (isRecentCash(d)) recentCashOut += (p.amount || 0);
+        }
         if (p.payment_method === 'UPI') salaryPaymentsUpi += (p.amount || 0);
       }
     }
@@ -174,11 +221,18 @@ export const financialCalculationService = {
 
     // 6. Business Funds
     for (const f of rawData.businessFunds) {
-      if (isIncluded(f.business_date)) {
+      const d = f.business_date;
+      if (isIncluded(d)) {
         // If amount is positive and type is Injection, add. If type is Withdrawal, subtract.
         const sign = f.type === 'Withdrawal' ? -1 : 1;
         const adjustedAmount = (f.amount || 0) * sign;
-        if (f.payment_method === 'Cash') businessFundsCash += adjustedAmount;
+        if (f.payment_method === 'Cash') {
+          businessFundsCash += adjustedAmount;
+          if (isRecentCash(d)) {
+            if (sign === 1) recentCashIn += (f.amount || 0);
+            else recentCashOut += (f.amount || 0);
+          }
+        }
         if (f.payment_method === 'UPI') businessFundsUPI += adjustedAmount;
       }
     }
@@ -199,14 +253,8 @@ export const financialCalculationService = {
     
     // We treat expectedCash exactly as cashBalance to avoid confusion, 
     // unless closing Service has a different historical audited amount.
-    // The engine's job is pure math:
-    const cashBalance = openingCash 
-                      + cashSales 
-                      + customerCollectionsCash 
-                      + businessFundsCash 
-                      - businessExpensesCash 
-                      - vendorPaymentsCash 
-                      - salaryPaymentsCash;
+    // The engine's job is pure math, but anchored to the most recent audited closing:
+    const cashBalance = cashAnchorValue + recentCashIn - recentCashOut;
 
     const upiBalance = openingUPI 
                      + upiSales 
@@ -305,9 +353,10 @@ export const financialCalculationService = {
     summary.sales.total = summary.sales.cash + summary.sales.upi + summary.sales.credit;
 
     // 3. Expenses
+    // NOTE: Skip category='Salary' — mirrored in salary_payments and counted in Loop 5.
     for (const exp of rawData.expenses) {
       const d = exp.expense_date;
-      if (d === dateStr) {
+      if (d === dateStr && exp.category !== 'Salary') {
         if (exp.expense_type === 'personal') {
           summary.expenses.personalWithdrawals += (exp.amount || 0);
         } else {

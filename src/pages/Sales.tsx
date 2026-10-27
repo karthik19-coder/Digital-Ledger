@@ -8,10 +8,8 @@ import { BusinessDateNavigator } from '../components/shared';
 import { useBusinessDate } from '../hooks/useBusinessDate';
 
 import { salesService, DailySaleSummary } from '../services/sales.service';
-import { dashboardService } from '../services/dashboard.service';
 import { transactionService } from '../services/transaction.service';
 import { closingService } from '../services/closing.service';
-import { useDashboardStore } from '../store/dashboard.store';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -44,7 +42,7 @@ const salesSchema = z.object({
 
 type SalesFormValues = z.infer<typeof salesSchema>;
 
-import { useQueryCache } from '../hooks/useQueryCache';
+import { useQueryCache, invalidateCache } from '../hooks/useQueryCache';
 import { formatCurrency } from '../utils/formatters';
 import { usePermissions } from '../hooks/usePermissions';
 import { useModalNavigation } from '../hooks/useModalNavigation';
@@ -150,13 +148,7 @@ export default function Sales() {
     };
   }, [selectedDateStr]);
 
-  const refreshDashboard = async () => {
-    // Only fetch dashboard summary if we really need it in state,
-    // but the transactionService already dispatches the refresh event.
-    // To be completely safe without refactoring dashboard store logic right now:
-    const dashSummary = await dashboardService.getDailySummary();
-    useDashboardStore.setState(dashSummary as any);
-  };
+
 
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg);
@@ -201,8 +193,8 @@ export default function Sales() {
       // Reload summary
       await loadSummary();
 
-      // Refresh dashboard
-      await refreshDashboard();
+      // Invalidate dashboard cache so it re-fetches fresh data on next visit
+      invalidateCache('dashboard-');
 
       showSuccess(existingSale ? 'Sale updated successfully' : 'Sale recorded successfully');
     } catch (error: unknown) {
@@ -227,8 +219,8 @@ export default function Sales() {
       // Reload summary
       await loadSummary();
 
-      // Refresh dashboard
-      await refreshDashboard();
+      // Invalidate dashboard cache so it re-fetches fresh data on next visit
+      invalidateCache('dashboard-');
 
       closeClearModal();
       showSuccess(`All sales for ${formatDateDisplay(selectedDateStr)} cleared.`);
@@ -313,7 +305,7 @@ export default function Sales() {
           </HeaderActionGroup>
         </AppHeaderBanner>
 
-        <div className="p-4 sm:p-6 space-y-6">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-md lg:max-w-5xl mx-auto w-full">
 
         {/* Cash / UPI / Credit Breakdown */}
         <div className="grid grid-cols-3 gap-2 sm:gap-4 min-w-0">
@@ -349,12 +341,12 @@ export default function Sales() {
         <form onSubmit={(e) => {
           if (!requirePermission(e)) return;
           form.handleSubmit(onSubmit)(e);
-        }} className="space-y-4">
-          {/* Cash & UPI Inputs */}
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+        }} className="space-y-6">
+          {/* Inputs Grid: 2 columns on mobile/sm, 3 columns on desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {/* Cash Sales Input */}
             <Card className={`shadow-sm ${colors.neutral.border}`}>
-              <CardContent className="p-2.5 p-4">
+              <CardContent className="p-3 sm:p-4">
                 <Label htmlFor="cash_sales" className={`text-[10px] sm:text-xs font-bold sm:font-semibold ${moduleTheme.sales.text} flex items-center gap-1.5 mb-1.5 sm:mb-2 uppercase tracking-wider`}>
                   <div className={`p-1 ${moduleTheme.sales.bgLight} rounded-md`}>
                     <Wallet className="w-3 h-3" />
@@ -392,7 +384,7 @@ export default function Sales() {
 
             {/* UPI Sales Input */}
             <Card className={`shadow-sm ${colors.neutral.border}`}>
-              <CardContent className="p-2.5 p-4">
+              <CardContent className="p-3 sm:p-4">
                 <Label htmlFor="upi_sales" className="text-[10px] sm:text-xs font-bold sm:font-semibold text-blue-600 flex items-center gap-1.5 mb-1.5 sm:mb-2 uppercase tracking-wider">
                   <div className="p-1 bg-blue-50 rounded-md">
                     <CreditCard className="w-3 h-3" />
@@ -427,50 +419,48 @@ export default function Sales() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Credit Sales (Read-Only) */}
+            <Card className={`shadow-sm ${colors.neutral.border} sm:col-span-2 lg:col-span-1`}>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                  <Label className="text-[10px] sm:text-xs font-bold sm:font-semibold text-orange-600 flex items-center gap-1.5 uppercase tracking-wider">
+                    <div className="p-1 bg-orange-50 rounded-md">
+                      <Users className="w-3 h-3" />
+                    </div>
+                    Credit Sales
+                  </Label>
+                  <Lock className="w-3.5 h-3.5 text-orange-400" />
+                </div>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold text-lg pointer-events-none">
+                      ₹
+                    </span>
+                    <Input
+                    type="text"
+                    className={`h-9 sm:h-11 pl-6 sm:pl-7 font-mono text-base sm:text-lg text-orange-600 ${colors.neutral.bg} cursor-not-allowed select-none ${colors.neutral.border} shadow-sm rounded-lg`}
+                    disabled={true}
+                    readOnly={true}
+                    tabIndex={-1}
+                    value={summary.credit_total}
+                  />
+                </div>
+                <p className="text-[10px] sm:text-[11px] text-slate-500 mt-1.5 font-medium flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-slate-400" />
+                  Calculated from Customer Credit.
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Credit Sales (Read-Only) */}
-          <Card className={`shadow-sm ${colors.neutral.border}`}>
-            <CardContent className="p-2.5 p-4">
-              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                <Label className="text-[10px] sm:text-xs font-bold sm:font-semibold text-orange-600 flex items-center gap-1.5 uppercase tracking-wider">
-                  <div className="p-1 bg-orange-50 rounded-md">
-                    <Users className="w-3 h-3" />
-                  </div>
-                  Credit Sales
-                </Label>
-                <Lock className="w-3.5 h-3.5 text-orange-400" />
-              </div>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-semibold text-lg pointer-events-none">
-                    ₹
-                  </span>
-                  <Input
-                  type="text"
-                  className={`h-9 sm:h-11 pl-6 sm:pl-7 font-mono text-base sm:text-lg text-orange-600 ${colors.neutral.bg} cursor-not-allowed select-none ${colors.neutral.border} shadow-sm rounded-lg`}
-                  disabled={true}
-                  readOnly={true}
-                  tabIndex={-1}
-                  value={summary.credit_total}
-                />
-              </div>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 mt-1.5 font-medium flex items-center gap-1">
-                <Lock className="w-3 h-3 text-slate-400" />
-                Calculated automatically from Customer Credit.
-              </p>
-            </CardContent>
-          </Card>
-
-
-
           {/* Action Buttons */}
-          <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3 items-center pt-2">
             <PrimaryActionButton 
               theme="sales"
               type="submit" 
               loading={isSubmitting || isLoading}
               icon={existingSale ? Edit2 : Plus}
-              className={!isOwner() ? 'opacity-50 cursor-not-allowed' : ''}
+              className={cn("flex-1 w-full", !isOwner() && 'opacity-50 cursor-not-allowed')}
               onClick={requirePermission}
             >
               {existingSale ? "Edit Today's Sale" : "Add Sales"}
@@ -480,7 +470,7 @@ export default function Sales() {
               <Button 
                 type="button"
                 variant="outline"
-                className={cn("w-full h-11 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 text-sm font-medium rounded-xl", !isOwner() && "opacity-50 cursor-not-allowed")}
+                className={cn("w-full sm:w-auto sm:min-w-[180px] h-11 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 text-sm font-medium rounded-xl shrink-0", !isOwner() && "opacity-50 cursor-not-allowed")}
                 disabled={isClearing || isLoading}
                 onClick={(e) => { if (requirePermission(e)) openClearModal(); }}
               >

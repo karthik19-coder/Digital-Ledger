@@ -21,7 +21,7 @@ export function PageHero({ theme, title, subtitle, amount, icon: Icon, actions }
         <Icon className="w-48 h-48 sm:w-64 sm:h-64 text-white" />
       </div>
 
-      <div className="relative max-w-md mx-auto z-10">
+      <div className="relative max-w-md lg:max-w-6xl mx-auto z-10">
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-3">
             <div className={`p-2 bg-white/20 ${radius.xl} backdrop-blur-sm ${shadow.button}`}>

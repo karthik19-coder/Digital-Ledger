@@ -3,6 +3,20 @@ import { useState, useEffect, useRef } from 'react';
 const globalDataCache = new Map<string, any>();
 
 /**
+ * Invalidates (removes) all cache entries whose keys start with the given prefix.
+ * Call this after mutations to ensure navigating to a page fetches fresh data.
+ * 
+ * @param prefix Key prefix to match (e.g. 'dashboard-' clears all dashboard cache entries)
+ */
+export function invalidateCache(prefix: string) {
+  for (const key of globalDataCache.keys()) {
+    if (key.startsWith(prefix)) {
+      globalDataCache.delete(key);
+    }
+  }
+}
+
+/**
  * A custom hook to fetch and globally cache API requests.
  * Prevents flashing loading skeletons when returning to a previously visited page.
  * 

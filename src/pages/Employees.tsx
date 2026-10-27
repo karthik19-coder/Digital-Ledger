@@ -153,7 +153,7 @@ export default function Employees() {
         </HeaderActionGroup>
       </AppHeaderBanner>
 
-      <div className="px-4 sm:px-6 space-y-6 mt-6 relative z-20">
+      <div className="px-4 sm:px-6 lg:px-8 space-y-6 mt-6 relative z-20 max-w-md lg:max-w-5xl mx-auto w-full">
         {/* Toast */}
         {successMessage && (
           <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-green-50 text-green-700 px-4 py-3 rounded-lg shadow-lg border border-green-100 flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top-4">

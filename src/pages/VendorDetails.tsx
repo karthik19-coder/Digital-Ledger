@@ -515,7 +515,7 @@ export default function VendorDetails() {
         </div>
       </AppHeaderBanner>
 
-      <div className="px-4 sm:px-6 space-y-6 mt-6 relative z-20">
+      <div className="px-4 sm:px-6 lg:px-8 space-y-6 mt-6 relative z-20 max-w-md lg:max-w-5xl mx-auto w-full">
       <Card className={`shadow-sm ${colors.neutral.border} mb-6 overflow-hidden`}>
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">

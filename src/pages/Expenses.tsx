@@ -126,31 +126,34 @@ export default function Expenses() {
         </HeaderActionGroup>
       </AppHeaderBanner>
 
-      <div className="px-4 sm:px-6 space-y-6 mt-6 relative z-20">
-        {/* Employees & Payroll Navigation Card */}
-        <FinancialCard
-          title="Employees & Payroll"
-          subtitle="Manage attendance & salary"
-          icon={Users}
-          theme="salary"
-          onClick={() => navigate('/expenses/employees')}
-          className="mb-3 border border-blue-100"
-          badge={<ChevronRight className="w-5 h-5 text-slate-400" />}
-        />
+      <div className="px-4 sm:px-6 lg:px-8 space-y-6 mt-6 relative z-20 max-w-md lg:max-w-5xl mx-auto w-full">
+        {/* Navigation Cards Grid: Side-by-side on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+          {/* Employees & Payroll Navigation Card */}
+          <FinancialCard
+            title="Employees & Payroll"
+            subtitle="Manage attendance & salary"
+            icon={Users}
+            theme="salary"
+            onClick={() => navigate('/expenses/employees')}
+            className="border border-blue-100"
+            badge={<ChevronRight className="w-5 h-5 text-slate-400" />}
+          />
 
-        {/* Business Funds History Navigation Card */}
-        <FinancialCard
-          title="Business Funds History"
-          subtitle="View injected capital"
-          icon={Landmark}
-          theme="businessFunds"
-          onClick={() => navigate('/business-funds')}
-          className="mb-6 border border-emerald-100"
-          badge={<ChevronRight className="w-5 h-5 text-slate-400" />}
-        />
+          {/* Business Funds History Navigation Card */}
+          <FinancialCard
+            title="Business Funds History"
+            subtitle="View injected capital"
+            icon={Landmark}
+            theme="businessFunds"
+            onClick={() => navigate('/business-funds')}
+            className="border border-emerald-100"
+            badge={<ChevronRight className="w-5 h-5 text-slate-400" />}
+          />
+        </div>
 
         {/* Recent Expenses */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <SectionHeader title="Recent Expenses" />
           {!data?.recentExpenses || data.recentExpenses.length === 0 ? (
             <EmptyState 
@@ -159,7 +162,7 @@ export default function Expenses() {
               subtitle="Tap 'Add Expense' to get started."
             />
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {data.recentExpenses.map((expense) => (
                 <FinancialCard
                   key={expense.id}
@@ -171,7 +174,7 @@ export default function Expenses() {
                   theme="expenses"
                   badge={
                     expense.expense_type && (
-                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-1 flex-shrink-0 ${
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 flex-shrink-0 ${
                         expense.expense_type === 'personal' 
                           ? 'bg-purple-100 text-purple-700'
                           : 'bg-blue-100 text-blue-700'
@@ -186,12 +189,12 @@ export default function Expenses() {
           )}
           
           {data && data.recentExpenses && data.recentExpenses.length > 0 && (
-            <div className="pt-2">
+            <div className="pt-2 flex justify-center">
               <ModuleActionButton 
                 label="View Complete History"
                 variant="primary"
                 onClick={() => navigate('/expenses/history')}
-                className="w-full justify-center"
+                className="w-full sm:w-auto sm:min-w-[240px] justify-center"
                 icon={History}
               />
             </div>

@@ -68,6 +68,7 @@ export default function Setup() {
         ...settingsData,
         password_hash: password,
         currency: 'INR',
+        timezone: 'Asia/Kolkata',
         opening_customer_due: 0,
         opening_vendor_due: 0,
         business_start_date: new Date().toISOString().split('T')[0],
